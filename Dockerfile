@@ -2,8 +2,6 @@ FROM php:7.1-fpm
 
 ARG XDEBUG_VERSION=2.9.2
 
-#RUN printf "deb http://archive.ubuntu.com/ubuntu natty main restricted universe multiverse" > /etc/apt/sources.list
-
 RUN apt-get update && apt-get -y install \
       autoconf \
       automake \
