@@ -63,9 +63,6 @@ RUN mkdir -p /usr/src/php/ext/xdebug && \
     docker-php-ext-install xdebug && \
     echo "xdebug.remote_enable=1" >> /usr/local/etc/php/php.ini
 
-# Copy composer.lock and composer.json
-COPY composer.lock composer.json /var/www/
-
 # Set working directory
 WORKDIR /var/www
 
