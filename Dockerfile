@@ -1,4 +1,4 @@
-FROM php:7.1-fpm
+FROM php:7.2-fpm
 
 ARG XDEBUG_VERSION=2.9.2
 
@@ -18,6 +18,8 @@ RUN apt-get update && apt-get -y install \
       libxcb1-dev \
       libxcb-shm0-dev \
       libxcb-xfixes0-dev \
+      libmagickwand-dev \
+      imagemagick \
       pkg-config \
       texinfo \
       wget \
@@ -29,7 +31,8 @@ RUN apt-get update && apt-get -y install \
       libvpx-dev \
       libmp3lame-dev \
       libopus-dev \
-      libx264-dev
+      libx264-dev \
+      libxrender1
 
 RUN mkdir -p ~/ffmpeg_sources ~/bin && cd ~/ffmpeg_sources && \
     wget -O ffmpeg-4.2.2.tar.bz2 https://ffmpeg.org/releases/ffmpeg-4.2.2.tar.bz2 && \
@@ -58,10 +61,20 @@ RUN mkdir -p ~/ffmpeg_sources ~/bin && cd ~/ffmpeg_sources && \
     hash -r
 RUN mv ~/bin/ffmpeg /usr/local/bin && mv ~/bin/ffprobe /usr/local/bin && mv ~/bin/ffplay /usr/local/bin
 
+RUN pecl install imagick-3.4.3
+RUN docker-php-ext-enable imagick
+
+#RUN apt-get update && apt-get -y install xvfb && apt-get -y install fontconfig && apt-get -y install libssl-dev && apt-get -y install libx11-dev libx11-xcb-dev libxcb-icccm4-dev libxcb-image0-dev libxcb-keysyms1-dev libxcb-randr0-dev libxcb-render-util0-dev libxcb-render0-dev libxcb-shm0-dev libxcb-util0-dev libxcb-xfixes0-dev libxcb-xkb-dev libxcb1-dev libxfixes-dev libxrandr-dev libxrender-dev
+
 RUN mkdir -p /usr/src/php/ext/xdebug && \
     curl -fsSL https://xdebug.org/files/xdebug-${XDEBUG_VERSION}.tgz | tar xz -C /usr/src/php/ext/xdebug --strip 1 && \
     docker-php-ext-install xdebug && \
     echo "xdebug.remote_enable=1" >> /usr/local/etc/php/php.ini
+
+RUN apt-get update && \
+    apt-get install -y libfreetype6-dev libjpeg62-turbo-dev  && \
+    docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ && \
+    docker-php-ext-install gd
 
 # Set working directory
 WORKDIR /var/www
@@ -80,15 +93,17 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     curl \
-    libpq-dev
+    libpq-dev \
+    libgmp-dev
+
+
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install extensions
-RUN docker-php-ext-install pdo_pgsql mbstring zip exif pcntl opcache
 RUN docker-php-ext-configure gd --with-gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ --with-png-dir=/usr/include/
-RUN docker-php-ext-install gd
+RUN docker-php-ext-install pdo_pgsql mbstring zip exif pcntl opcache bcmath gmp
 
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
