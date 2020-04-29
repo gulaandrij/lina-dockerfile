@@ -94,7 +94,8 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     libpq-dev \
-    libgmp-dev
+    libgmp-dev \
+    libressl-dev
 
 
 
