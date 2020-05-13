@@ -94,10 +94,22 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     libpq-dev \
-    libgmp-dev \
-    libressl-dev
+    libgmp-dev 
 
+RUN wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.stretch_amd64.deb
+RUN mv wkhtmltox_0.12.5-1.stretch_amd64.deb /tmp/
+RUN apt-get update
+RUN apt-get install -y zlib1g fontconfig libxrender1 libfreetype6 libxext6 libx11-6 gnupg2
+RUN apt-get install /tmp/wkhtmltox_0.12.5-1.stretch_amd64.deb -y
 
+RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list
+RUN apt-get update
+RUN apt-get install -y postgresql-client-12
+
+RUN rm /tmp/wkhtmltox_0.12.5-1.stretch_amd64.deb
+RUN apt install --fix-broken --assume-yes
+RUN ln -s /usr/local/bin/wkhtmltopdf /usr/bin/wkhtmltopdf
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
